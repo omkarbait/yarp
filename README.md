@@ -1,7 +1,7 @@
-## yarrp
+# yarrp
 Yet Another Radio-data Reduction Pipeline
 
-# CASA-6.0 installation notes for Ubuntu 18.04
+## CASA-6.0 installation notes for Ubuntu 18.04
 
 Create a virtual environment as given in the CASA site. Then update pip to the lastest: 
 
@@ -69,3 +69,6 @@ Flag after applying selfcal. rflag the line free channels to 6 sigma, and the li
 ## The future
 
 The workflow is ready in the form of a pipeline. Use ruffus to fuse together all the scripts in a workflow. 
+
+### Acknowledgements
+Some of the initial developement of this pipeline took some inspiration from the [CAPTURE pipeline](https://github.com/ruta-k/uGMRT-pipeline) designed for the uGMRT continuum data reduction. The extensive [VLA data reduction tutorials](https://casaguides.nrao.edu/index.php?title=Main_Page) and the [Radio Astronomy School 2019](http://www.ncra.tifr.res.in/~ruta/ras2019/CASA-tutorial.html) tutorials came out to be very useful in writing this pipeline. Nissim's "famous" AIPS.INFO also came out to be handy. I would also like to thank Sushma Kurapati and Biny Sebastian for useful dicussions which helped in improving this pipeline. 
