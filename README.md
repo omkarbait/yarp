@@ -1,5 +1,5 @@
 # yarrp v0.9.0
-Yet Another Radio-data Reduction Pipeline
+Yet Another Radio-data Reduction Pipeline (yarrp)
 
 ## CASA-6.0 installation notes for Ubuntu 18.04
 
