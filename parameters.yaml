@@ -1,0 +1,71 @@
+calibration:
+  apgaintable: apgain.cal
+  bpassgaintable: bpassgain.gcal
+  bpasstable: bandpass.cal
+  delaytable: delays.cal
+  fluxscaletable: fluxscale.tbl
+  gaintables:
+  - delays.cal
+  - bandpass.cal
+  - blcal.cal
+  - fluxscale.tbl
+cube:
+  deconvolver: hogbom
+  robust: 0.5
+  vel_res: 14
+  weighting: briggs
+flagging:
+  badants:
+  - C04
+  - W06
+  refant: C00
+general:
+  bandcal: null
+  fitsfile: null
+  fluxcal:
+  - 3C286
+  - 3C147
+  msfile: ../blcal_test/CGCG032-017_cen1K_split.ms
+  outdir: /mnt/work/work/HI_DATA/blcal_test/out_RGG5/
+  phasecal: 0745+101
+  spw: '0'
+  target: RGG5
+  targetcalfile: ../blcal_test/RGG5_cen1k_yarrp_cal.ms
+  temp: /mnt/work/work/HI_DATA/blcal_test/temp/
+  uvran: 0~100klambda
+  yarrp_version: v0.1
+imagecal:
+  aploops: 1
+  cell: 0.4
+  chanbin: 82
+  imsize: 4500
+  niter_range:
+  - 2000
+  - 5000
+  nloops: 1
+  nterms: 2
+  outimage: RGG5_cont
+  ploops: 4
+  regionfile: ../regions/stats_region.crtf
+  robust: 0
+  scales:
+  - 0
+  - 5
+  - 15
+  solints:
+  - 8
+  - 1
+  spec_line_spw: 0:5~6
+  threshold_final: 0.03
+  threshold_range:
+  - 1
+  - 0.06
+  uvran: 0.5~100klambda
+  uvtaper:
+  - 90klambda
+  weighting: briggs
+  wprojplanes: -1
+uvsub:
+  fitorder: 1
+  linefreespw: 0:10~428;596~1014
+  linespw: 0:429~595
