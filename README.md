@@ -1,7 +1,7 @@
 ## yarrp
 Yet Another Radio-data Reduction Pipeline
 
-## CASA-6.0 installation notes for Ubuntu 18.04
+# CASA-6.0 installation notes for Ubuntu 18.04
 
 Create a virtual environment as given in the CASA site. Then update pip to the lastest: 
 
