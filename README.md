@@ -1,4 +1,4 @@
-# yarp v0.9.0
+# yarp
 Yet Another Radio data reduction Pipeline (yarp).
 
 Requirements: casa 6.0, astropy, PyYAML.
