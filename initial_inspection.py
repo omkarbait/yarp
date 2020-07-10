@@ -31,5 +31,5 @@ except:
 
 for i in fluxcal:
     print(i)
-    subprocess.run('casaplotms vis={}, field={},  spw=0:256, iteraxis=antenna, exprange=all, plotfile=out_CGCG032-017/ants/i.png, showgui=False, overwrite=True', shell=True, check=True)
+    subprocess.run('casaplotms vis={} field={} spw=0:256 iteraxis=antenna exprange=all plotfile={}+ants/{}.png showgui=False overwrite=True'.format(msfile, i, outdir, i), shell=True, check=True)
 

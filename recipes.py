@@ -102,11 +102,19 @@ def flagcal(msfile, params, niters=1, flagger='default', interactive=False):
         def clip_est(fluxscale, nsigma, loop, beta):
             return [fluxscale - nsigma/loop**beta, fluxscale + nsigma/loop**beta]
         
-        fluxscale_list = [15, 22.5, 3.3]
-        uplims_list = [20, 20, 20] 
-        beta=[0.5, 0.6, 0.6]
-        tcut_list = [6, 6, 10]
-        fcut_list = [6, 6, 10]
+        #fluxscale_list = [15, 22.5, 3.3] 
+	#uplims_list = [20, 20, 20] 
+        #beta=[0.5, 0.6, 0.6]
+        #tcut_list = [6, 6, 10]
+        #fcut_list = [6, 6, 10]
+	pcal_flux = np.float(phasecal_flux['1']['0']['fluxd'][0]
+	fluxscale_list = params['general']['fluxscale_list']
+	fluxscale_list.append(pcal_flux)
+	uplims_list = params['flagging']['uplims_list']
+        beta= params['flagging']['beta']
+        tcut_list = params['flagging']['tcut_list']
+        fcut_list = params['flagging']['fcut_list']
+
         if flagger == 'default':
             for j,i in enumerate(allcals):
                 flg.clipper(msfile, params, field=i, cliplevel=clip_est(fluxscale_list[j], uplims_list[j], loop, beta[j]), instance='postcal')

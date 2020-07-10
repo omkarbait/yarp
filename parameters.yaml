@@ -7,8 +7,6 @@ calibration:
   gaintables:
   - delays.cal
   - bandpass.cal
-  - blcal.cal
-  - fluxscale.tbl
 cube:
   deconvolver: hogbom
   robust: 0.5
@@ -16,24 +14,28 @@ cube:
   weighting: briggs
 flagging:
   badants:
-  - C04
+  - E03
+  - E04
+  - E05
+  - E06
   - W06
   refant: C00
+  spw: 0:0~20;8172~8192
 general:
   bandcal: null
   fitsfile: null
   fluxcal:
   - 3C286
   - 3C147
-  msfile: ../blcal_test/CGCG032-017_cen1K_split.ms
-  outdir: /mnt/work/work/HI_DATA/blcal_test/out_RGG5/
-  phasecal: 0745+101
+  msfile: /Data/omkar/HI_DATA/quenched_hi/agc722572.ms
+  outdir: /Data/omkar/HI_DATA/quenched_hi/out_agc722572/
+  phasecal: 1125+261
   spw: '0'
-  target: RGG5
-  targetcalfile: ../blcal_test/RGG5_cen1k_yarrp_cal.ms
-  temp: /mnt/work/work/HI_DATA/blcal_test/temp/
+  target: agc722572
+  targetcalfile: /Data/omkar/HI_DATA/quenched_hi/agc722572_yarp_cal.ms
+  temp: /temp1/omkar/temp/
   uvran: 0~100klambda
-  yarrp_version: v0.1
+  yarrp_version: v0.9.0
 imagecal:
   aploops: 1
   cell: 0.4
@@ -44,9 +46,9 @@ imagecal:
   - 5000
   nloops: 1
   nterms: 2
-  outimage: RGG5_cont
+  outimage: agc722572_cont
   ploops: 4
-  regionfile: ../regions/stats_region.crtf
+  regionfile: /Data/omkar/HI_DATA/quenched_hi/out_agc722572/regions/stats_region.crtf
   robust: 0
   scales:
   - 0

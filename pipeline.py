@@ -14,11 +14,17 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
     with open('yarrp_art.txt', 'r') as f:
         for line in f:
             print(line.rstrip())   
-    print('Running the yarrp pipeline on {}'.format(msfile))    
+    print('Running the yarrp pipeline on {}'.format(msfile))
     if doinitial_flagging:
-        flg.badantflag(msfile, params)
+        flag_spw = params['flagging']['spw']
+	bad_ants = params['flagging']['badants']
+        if len(ban_ants) != 0:
+		flg.badantflag(msfile, params)
+	else:
+		print('No bad antennas found.')
         cts.flagdata(msfile, mode='quack', field='', spw='0', antenna='', correlation='', timerange='', quackinterval=10, quackmode='beg', action='apply', savepars=True, cmdreason='quackbeg')
         cts.flagdata(msfile, mode='quack', field='', spw='0', antenna='', correlation='', timerange='', quackinterval=10, quackmode='endb', action='apply', savepars=True, cmdreason='quackendb')
+        cts.flagdata(msfile, mode='manual', field='', spw=flag_spw, antenna='', correlation='', timerange='', action='apply', savepars=True, cmdreason='badchannels')
         flg.tfcropper(msfile, params, field='', tcut=6, fcut=6, instance='initial')
         cts.flagdata(msfile, mode='manual', uvrange='>100klambda') # Flag very long baselines as that can affect the calibration  
         flg.extend(msfile, params, instance='initial')
@@ -31,7 +37,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
 
     if doflagcal:
         print('Running the flagcal script...')
-        flagcal_bl(msfile, params, niters=5, flagger='default', interactive=False)
+        flagcal(msfile, params, niters=5, flagger='default', interactive=False)
     else:
         print('No flagcal this time.')
 
@@ -171,6 +177,6 @@ if __name__ == "__main__":
     msfile = general_params['msfile']
     outdir = general_params['outdir']
     fluxcal= general_params['fluxcal']
-    pipeline(msfile, params, doinitial_flagging=False, doflagcal=False, doimagecal=False, douvsub=True, docubeimage=False)
+    pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal=False, douvsub=False, docubeimage=False)
 
 
