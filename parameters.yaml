@@ -7,6 +7,7 @@ calibration:
   gaintables:
   - delays.cal
   - bandpass.cal
+  - fluxscale.tbl
 cube:
   deconvolver: hogbom
   robust: 0.5
@@ -19,20 +20,26 @@ flagging:
   - E05
   - E06
   - W06
+  - W03
   refant: C00
-  spw: 0:0~20;8172~8192
-general:
+  spw: False
+generalA:
   bandcal: null
   fitsfile: null
   fluxcal:
   - 3C286
   - 3C147
-  msfile: /Data/omkar/HI_DATA/quenched_hi/agc722572.ms
-  outdir: /Data/omkar/HI_DATA/quenched_hi/out_agc722572/
+  fluxscale_list: [15, 22.5]
+  uplims_list: [20, 20, 20]
+  beta: [0.7, 0.7, 0.7]
+  tcut_list: [6, 6, 6]
+  fcut_list: [6, 6, 6]
+  msfile: /Data/omkar/HI_DATA/quenched_hi/AGC722572_cen2K.ms
+  outdir: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/
   phasecal: 1125+261
   spw: '0'
-  target: agc722572
-  targetcalfile: /Data/omkar/HI_DATA/quenched_hi/agc722572_yarp_cal.ms
+  target: AGC722572
+  targetcalfile: /Data/omkar/HI_DATA/quenched_hi/AGC722572_yarp_cal.ms
   temp: /temp1/omkar/temp/
   uvran: 0~100klambda
   yarrp_version: v0.9.0
@@ -46,9 +53,9 @@ imagecal:
   - 5000
   nloops: 1
   nterms: 2
-  outimage: agc722572_cont
+  outimage: AGC722572_cont
   ploops: 4
-  regionfile: /Data/omkar/HI_DATA/quenched_hi/out_agc722572/regions/stats_region.crtf
+  regionfile: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/regions/stats_region.crtf
   robust: 0
   scales:
   - 0
