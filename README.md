@@ -1,44 +1,72 @@
 # yarp
-Yet Another Radio data reduction Pipeline (yarp).
+<<<<<<< HEAD
+Yet Another Radio data reduction Pipeline (yarp) is a modular CASA 6.0 based radio data reduction module. The current focus of this pipeline is to provide a modular environment for reduction raw interferometric radio data, mainly for HI imaging of nearby galaxies. This is mainly possible due to the purely Pythonic framework provided by CASA 6.0. This is a development version with several attempts being made to make the pipeline as modular as possible. 
 
-Requirements: casa 6.0, astropy, PyYAML.
+## Requirements 
+Currently there is no installation required for running this pipeline. Simply clone the repository and start using it. However, the following packages are required before running yarp:
+
+- `casa 6.0`
+- `astropy` 
+- `PyYAML`
+=======
+Yet Another Radio data reduction Pipeline (yarp).
+>>>>>>> f744cee68bd8c4bb71cc79449e0298b0a1aa1313
+
 
 ## CASA-6.0 installation notes for Ubuntu 18.04
 
-Create a virtual environment as given in the CASA site. Then update pip to the lastest: 
+This pipeline is mainly tested on Ubuntu 18.04. Use the latest `pip`:
+```
+python3 -m pip install -U pip
+```
+This install `casatools` and `casatasks` following the [casa 6.0 installation guide](https://casa.nrao.edu/casadocs/casa-5.6.0/introduction/casa6-installation-and-usage). Using `casampi` can speed things up.
 
-sudo pip3 install -U pip
+First make sure you have openmpi. If not, install:
+```
+apt-get install -y openmpi-bin openmpi-docs libopenmpi-dev mpi
+```
+Then `pip` install `casampi`.   
 
-Then pip install casatools. Sometimes you might have a problem with the hashes. In that case download the casatools wheel and manually install it. 
+### Problems
 
-There were no problems noted while installing casatasks. Next installing casampi. 
+Sometimes `casatools` maynot install in one go. In this manually download the `casatools` wheel and then install it using `pip`. 
 
-Make sure you have openmpi. If not, install:
+## yarp Usage and documentation
 
-sudo apt-get install -y openmpi-bin openmpi-docs libopenmpi-dev mpi
+A detailed documentation for yarp is under construction. Here I will give a brief overview on the usage.  
 
-Then pip install casampi as shown on the CASA site.   
+Before starting anything we need to convert the LTA files to FITS using ltabin and gvfits using the following commands:
 
-## CASA pipeline instructions
+1. `listscan <filename>_gwb.lta`
 
-Here I will briefly describe and write notes on the various scripts I have written for CASA. This will help in assimilating them all in the future. 
+After this edit the FITS column in the `.log` file to a suitable name for the output filts file. 
 
-The pipeline consists of several scripts e.g., flagcal, contimg etc. Each script consists of several recipes (python modules). 
+2. `gvfits <filename>.log`
+
+If you first want to run Jayaram's `flagcal` do:
+
+```flagcal fits_in=input.fits```
+
+Then finally convert the `.FITS` file to `.MS` using the `importgmrt.py` script. First simply change the locations of the input `.FITS` file and the output `.ms` files and then run:
+```
+python3 importgmrt.py
+```
+Before running the yarp pipeline the most important step is to fill in the `parameters.yaml` file. Here initially only fill in the `msfile` and `outdir` variables in the `general` section. Then run:
+```
+python3 initial_inspection.py
+```
+This will create a `listobs.txt` file in the `outdir/listscan/` folder. Use this to finally complete the `general` section in the `parameters.yaml` file. Next open the `yarp_planner.ipynb` to follow all the steps there. This will finally help you in filling all the sections related to the imaging, uvsubtraction and cubeimaging in the `parameters.yaml` file. 
+
+yarp consists of  major steps:
+
+- initial flagging. In this step several bad antennas are flagged and the data is quacked, edge channels flagged and the entire data is tfcroped.
+- flagcal. This is the main intial flagging and calibration 
 
 
-Before starting we need to convert LTA files to FITS using ltabin and gvfits using the following commands:
 
-1) listscan <filename>_gwb.lta
+Each script consists of several recipes (python modules). 
 
-After this edit the FITS column in the .log file to a suitable name for the output filts file. 
-
-2) gvfits <filename>.log
-
-If you first want to run flagcal do:
-
-flagcal fits_in=input.fits 
-
-## This script does the following steps:
+This script does the following steps:
 
 1) intial_inspection.py: 
 
