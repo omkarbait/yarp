@@ -1,5 +1,4 @@
 # yarp
-<<<<<<< HEAD
 Yet Another Radio data reduction Pipeline (yarp) is a modular CASA 6.0 based radio data reduction module. The current focus of this pipeline is to provide a modular environment for reduction raw interferometric radio data, mainly for HI imaging of nearby galaxies. This is mainly possible due to the purely Pythonic framework provided by CASA 6.0. This is a development version with several attempts being made to make the pipeline as modular as possible. 
 
 ## Requirements 
@@ -8,9 +7,6 @@ Currently there is no installation required for running this pipeline. Simply cl
 - `casa 6.0`
 - `astropy` 
 - `PyYAML`
-=======
-Yet Another Radio data reduction Pipeline (yarp).
->>>>>>> f744cee68bd8c4bb71cc79449e0298b0a1aa1313
 
 
 ## CASA-6.0 installation notes for Ubuntu 18.04
@@ -19,7 +15,7 @@ This pipeline is mainly tested on Ubuntu 18.04. Use the latest `pip`:
 ```
 python3 -m pip install -U pip
 ```
-This install `casatools` and `casatasks` following the [casa 6.0 installation guide](https://casa.nrao.edu/casadocs/casa-5.6.0/introduction/casa6-installation-and-usage). Using `casampi` can speed things up.
+Then install `casatools` and `casatasks` following the [casa 6.0 installation guide](https://casa.nrao.edu/casadocs/casa-5.6.0/introduction/casa6-installation-and-usage). It is also recommended to install `casampi` which can speed things up.
 
 First make sure you have openmpi. If not, install:
 ```
@@ -29,7 +25,7 @@ Then `pip` install `casampi`.
 
 ### Problems
 
-Sometimes `casatools` maynot install in one go. In this manually download the `casatools` wheel and then install it using `pip`. 
+Sometimes `casatools` may not install in one go. In this manually download the `casatools` wheel and then install it using `pip`. 
 
 ## yarp Usage and documentation
 
