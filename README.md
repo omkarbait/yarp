@@ -1,5 +1,7 @@
 # yarp v0.9.0
-Yet Another Radio data reduction Pipeline (yarp)
+Yet Another Radio data reduction Pipeline (yarp).
+
+Requirements: casa 6.0, astropy, PyYAML.
 
 ## CASA-6.0 installation notes for Ubuntu 18.04
 
