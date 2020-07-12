@@ -1,13 +1,16 @@
 calibration:
-  apgaintable: apgain.cal
-  bpassgaintable: bpassgain.gcal
-  bpasstable: bandpass.cal
-  delaytable: delays.cal
-  fluxscaletable: fluxscale.tbl
+  apgaintable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/apgain.cal
+  bpassgaintable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/bpassgain.gcal
+  bpasstable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/bandpass.cal
+  delaytable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/delays.cal
+  fluxscaletable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/fluxscale.tbl
   gaintables:
-  - delays.cal
-  - bandpass.cal
-  - fluxscale.tbl
+  - /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/delays.cal
+  - /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/bandpass.cal
+  - /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/fluxscale.tbl
+  ch0_spw: 0:251
+  ini_nloops: 3
+  nloops: 5
 cube:
   deconvolver: hogbom
   robust: 0.5
@@ -21,20 +24,38 @@ flagging:
   - E06
   - W06
   - W03
+  beta:
+  - 0.7
+  - 0.7
+  - 0.7
+  fcut_list:
+  - 6
+  - 6
+  - 6
   refant: C00
-  spw: False
-generalA:
+  spw: false
+  tcut_list:
+  - 6
+  - 6
+  - 6
+  uplims_list:
+  - 20
+  - 20
+  - 20
+general:
   bandcal: null
   fitsfile: null
   fluxcal:
   - 3C286
   - 3C147
-  fluxscale_list: [15, 22.5]
-  uplims_list: [20, 20, 20]
-  beta: [0.7, 0.7, 0.7]
-  tcut_list: [6, 6, 6]
-  fcut_list: [6, 6, 6]
-  msfile: /Data/omkar/HI_DATA/quenched_hi/AGC722572_cen2K.ms
+  fluxscale_list:
+  - 15
+  - 22.5
+  - 0.8432826920321829
+  - 0.8426200525041251
+  - 0.8422908315546928
+  - 0.8423831921444465
+  msfile: /Data/omkar/HI_DATA/quenched_hi/AGC722572_cen1K.ms
   outdir: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/
   phasecal: 1125+261
   spw: '0'
