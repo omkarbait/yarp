@@ -2,14 +2,14 @@ calibration:
   apgaintable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/apgain.cal
   bpassgaintable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/bpassgain.gcal
   bpasstable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/bandpass.cal
+  ch0_spw: 0:250~300
   delaytable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/delays.cal
   fluxscaletable: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/fluxscale.tbl
   gaintables:
   - /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/delays.cal
   - /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/bandpass.cal
   - /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/fluxscale.tbl
-  ch0_spw: 0:251
-  ini_nloops: 3
+  ini_nloops: 1
   nloops: 5
 cube:
   deconvolver: hogbom
@@ -55,6 +55,12 @@ general:
   - 0.8426200525041251
   - 0.8422908315546928
   - 0.8423831921444465
+  - 0.0456681945696834
+  - 0.04566825215025177
+  - 0.84328330399661
+  - 0.8426175366169976
+  - 0.8422319049663473
+  - 0.8422844765161918
   msfile: /Data/omkar/HI_DATA/quenched_hi/AGC722572_cen1K.ms
   outdir: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/
   phasecal: 1125+261

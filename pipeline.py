@@ -3,7 +3,7 @@ import flagger as flg
 import calibrator as clb
 import casatasks as cts
 import subprocess
-from recipes import flagcal, flagcal_bl, imagecal, imagecal2
+from recipes import flagcal, flagcal2, flagcal_bl, imagecal, imagecal2
 
 
 def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal=True, douvsub=True, docubeimage=False):
