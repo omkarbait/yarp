@@ -12,10 +12,10 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
 
     initial flagging --> setjy+delay calibration --> amplitude calibration + flagging loops on calibrators --> bandpass calibration + flagging loops --> imaging+selfcal loops --> final image --> UVSUB+CVEL --> Cube image with source finder. 
     '''
-    with open('yarrp_art.txt', 'r') as f:
+    with open('yarp_art.txt', 'r') as f:
         for line in f:
             print(line.rstrip())
-    print('Running the yarrp pipeline on {}'.format(msfile))
+    print('Running the yarp pipeline on {}'.format(msfile))
     if doinitial_flagging:
         flag_spw = params['flagging']['spw']
         bad_ants = params['flagging']['badants']
@@ -75,7 +75,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         aploops = params['imagecal']['aploops']
         print('Running {} cycles of self-cal with {} ploops and {} aploops in each cycle...'.format(
             str(nloops), str(ploops), str(aploops)))
-        final_image, selfcaltable = imagecal(
+        final_image, selfcaltable = imagecal2(
             avspcfile, params, nloops=nloops, ploops=ploops, aploops=aploops, flagger='default', interactive=False)
         print('Final self-cal table is', selfcaltable)
 
@@ -90,7 +90,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         nloops = params['imagecal']['nloops']
         ploops = params['imagecal']['ploops']
         aploops = params['imagecal']['aploops']
-
+        outdir = params['general']['outdir']
         # apply self-cal table to the full chan resolution file
         selfcaltable = [outdir+'sc_p.gcal.' +
                         str(nloops)+str(ploops), outdir+'sc_ap.gcal.'+str(nloops)+str(ploops)]
@@ -197,5 +197,5 @@ if __name__ == "__main__":
     msfile = general_params['msfile']
     outdir = general_params['outdir']
     fluxcal = general_params['fluxcal']
-    pipeline(msfile, params, doinitial_flagging=True, doflagcal=True,
-             doimagecal=False, douvsub=False, docubeimage=False)
+    pipeline(msfile, params, doinitial_flagging=False, doflagcal=False,
+             doimagecal=False, douvsub=True, docubeimage=True)

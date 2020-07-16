@@ -850,7 +850,7 @@ def imagecal2(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='def
     niter_range = imaging_params['niter_range']
     tempdir = params['general']['temp']
     outdir = params['general']['outdir']
-
+    nterms = imaging_params['nterms']
     # Preparing the ranges of different parameters for the loops
     solint_range = np.linspace(solints[0], solints[1], ploops)
     solint_range = [str(i)+'min' for i in solint_range]
@@ -882,8 +882,12 @@ def imagecal2(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='def
             imgr.tcleaner(targetcalfile, params, threshold=threshold_range[pindex - 1], niter=niter_range[pindex - 1],
                           outimage=tempdir+outimage+'_sc_p.'+str(nindex)+str(pindex), interactive=interactive)
             # Adding imstats in the list
-            imagename = tempdir+outimage+'_sc_p.' + \
-                str(nindex)+str(pindex)+'.image.tt0'
+            if nterms > 1:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(pindex)+'.image.tt0'
+            else:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(pindex)+'.image'
             type_list.append('p')
             loop_list.append(nindex)
             index_list.append(pindex)
@@ -911,8 +915,15 @@ def imagecal2(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='def
                           outimage=tempdir+outimage+'_sc_ap.'+str(nindex)+str(apindex), interactive=interactive)
 
             # Adding the self cal ap loop imstats in the list
-            imagename = tempdir+outimage+'_sc_ap.' + \
-                str(nindex)+str(apindex)+'.image.tt0'
+            # imagename = tempdir+outimage+'_sc_ap.' + \
+            #    str(nindex)+str(apindex)+'.image.tt0'
+
+            if nterms > 1:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(apindex)+'.image.tt0'
+            else:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(apindex)+'.image'
             type_list.append('ap')
             loop_list.append(nindex)
             index_list.append(apindex)
@@ -960,8 +971,14 @@ def imagecal2(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='def
                        wprojplanes=wprojplanes, scales=scales, wbawp=False, restoration=True,
                        savemodel='modelcolumn', cyclefactor=0.5, parallel=False, interactive=False)
 
-        imagename = tempdir+outimage+'_sc_ap_final.' + \
-            str(nindex)+str(apindex)+'.image.tt0'
+        if nterms > 1:
+            imagename = tempdir+outimage+'_sc_ap_final.' + \
+                str(nindex)+str(apindex)+'.image.tt0'
+        else:
+            imagename = tempdir+outimage+'_sc_ap_final.' + \
+                str(nindex)+str(apindex)+'.image'
+        # imagename = tempdir+outimage+'_sc_ap_final.' + \
+        #    str(nindex)+str(apindex)+'.image.tt0'
         type_list.append('final')
         loop_list.append(nindex)
         index_list.append(-99)
@@ -1009,7 +1026,7 @@ def imagecal2(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='def
     plt.ylabel('Dynamic Range')
     plt.savefig(outdir+'sc_iter.png')
 
-    # Self-cal loops overV
+    # Self-cal loops over
     outdir_ap_gaintable = [outdir+'sc_ap.gcal.'+str(nindex)+str(apindex)]
     outdir_p_gaintable = [outdir+'sc_p.gcal.'+str(nindex)+str(pindex)]
 
