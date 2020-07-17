@@ -14,7 +14,7 @@ calibration:
 cube:
   deconvolver: hogbom
   robust: 0.5
-  vel_res: 14
+  vel_res: 7
   weighting: briggs
 flagging:
   badants:
@@ -67,7 +67,7 @@ general:
   spw: '0'
   target: AGC722572
   targetcalfile: /Data/omkar/HI_DATA/quenched_hi/AGC722572_yarp_cal.ms
-  temp: /temp1/omkar/temp/
+  temp: /Data/omkar/HI_DATA/quenched_hi/temp/
   uvran: 0~100klambda
   yarrp_version: v0.9.0
 imagecal:
@@ -78,10 +78,10 @@ imagecal:
   niter_range:
   - 2000
   - 5000
-  nloops: 1
-  nterms: 2
+  nloops: 2
+  nterms: 1
   outimage: AGC722572_cont
-  ploops: 4
+  ploops: 3
   regionfile: /Data/omkar/HI_DATA/quenched_hi/out_AGC722572/regions/stats_region.crtf
   robust: 0
   scales:
@@ -103,5 +103,5 @@ imagecal:
   wprojplanes: -1
 uvsub:
   fitorder: 1
-  linefreespw: 0:10~428;596~1014
-  linespw: 0:429~595
+  linefreespw: 0:10~350;450~800
+  linespw: 0:351~449
