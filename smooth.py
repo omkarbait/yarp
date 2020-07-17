@@ -8,7 +8,7 @@ vel_res1 = params['cube']['vel_res']
 vel_res = str(vel_res1)+'km/s'
 #vel_res = '-14km/s'
 file_name = str(vel_res1)+'kmps'
-uvran = '0.5~40klambda'
+uvran = '0.5~5klambda'
 imagename = outdir+target+'_cube_'+str(file_name)+'/'+'uvran_'+str(uvran)+'.image'
 
 

@@ -93,7 +93,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         outdir = params['general']['outdir']
         # apply self-cal table to the full chan resolution file
         selfcaltable = [outdir+'sc_p.gcal.' +
-                        str(nloops)+str(ploops), outdir+'sc_ap.gcal.'+str(nloops)+str(ploops)]
+                        str(nloops)+str(ploops), outdir+'sc_ap.gcal.'+str(nloops)+str(aploops)]
         cts.applycal(targetcalfile, gaintable=selfcaltable, field='', gainfield='',
                      applymode='calonly', interp=['linear'], calwt=False, parang=False)
 
@@ -116,8 +116,8 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
 
         targetcalfile = params['general']['targetcalfile']
         cont_sub_file = targetcalfile+'.contsub'
-        subprocess.run('mv -r {} {}'.format(cont_sub_file, outdir),
-                       shell=True, check=True)
+        #subprocess.run('mv {} {}'.format(cont_sub_file, outdir),
+        #               shell=True, check=True)
     else:
         print('No uvsub this time.')
 
@@ -129,7 +129,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         targetcalfile = params['general']['targetcalfile']
         restfreq = '1.420405752GHz'
         cont_sub_file = targetcalfile+'.contsub'
-        cont_sub_file = outdir+cont_sub_file
+	#cont_sub_file = cont_sub_file
         weighting = params['cube']['weighting']
         robust = params['cube']['robust']
         deconvolver = params['cube']['deconvolver']
@@ -198,4 +198,4 @@ if __name__ == "__main__":
     outdir = general_params['outdir']
     fluxcal = general_params['fluxcal']
     pipeline(msfile, params, doinitial_flagging=False, doflagcal=False,
-             doimagecal=False, douvsub=True, docubeimage=True)
+             doimagecal=False, douvsub=False, docubeimage=True)
