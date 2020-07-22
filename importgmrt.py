@@ -7,13 +7,13 @@ import casatasks as cts
 #msfile = general_params['msfile']
 
 # import UV data
-#fitsfile = '../quenched_hi/AGC722572.FITS'
-#cts.importgmrt(fitsfile=fitsfile, vis='../quenched_hi/agc722572.ms')
+fitsfile = '/Data/omkar/HI_DATA/quenched_hi/AGC190633/09aug/AGC190633_09AUG.FITS'
+cts.importgmrt(fitsfile=fitsfile, vis='/Data/omkar/HI_DATA/quenched_hi/AGC190633/09aug/AGC190633_09aug.ms')
 
 
 # Select only the central 1K channels
 
-msfile = '../quenched_hi/agc722572.ms'
+msfile = '/Data/omkar/HI_DATA/quenched_hi/AGC190633/09aug/AGC190633_09aug.ms'
 
 #tot_chans = 8192
 #cen_chan = 8192/2 + 1

@@ -18,6 +18,7 @@ imagename = outdir+target+'_cube_'+str(file_name)+'/'+'uvran_'+str(uvran)+'.imag
 
 #imagename = outdir+'RGG5_cube_7kmps_hogbom/uvran_0.5~40klambda.image' 
 
+imagename = '/Data/omkar/HI_DATA/quenched_hi/out_AGC722572/AGC722572_cube_multiscale_7kmps/uvran_0.5~5klambda.image'
 smooth_name = imagename+'_hanningsmooth.im'
 print(smooth_name)
 #outname = imagename
@@ -26,8 +27,8 @@ print(smooth_name)
 
 #region = '/Data/omkar/HI_DATA/quenched_hi/AGC722572/out_AGC722572/regions/AGC722572_mom_region.crtf'
 region = 'box [[10:49:56.32923, +025.58.20.6945], [10:49:03.81253, +026.05.47.4442]]'
-#cts.immoments(axis='spec', imagename=smooth_name, moments=0, region=region, includepix=[2e-3,170] , chans='90~98', outfile=smooth_name+'.mom0')
+cts.immoments(axis='spec', imagename=smooth_name, moments=0, region=region, includepix=[1e-3,170] , chans='90~98', outfile=smooth_name+'.mom0')
 #cts.immoments(axis='spec', imagename=smooth_name, moments=0, region='../regions/mom_region.crtf', chans='40~54', outfile=smooth_name+'_rms.mom0')
 
-cts.immoments(axis='spec', imagename=smooth_name, moments=1, region=region, includepix=[2e-3,170] , chans='90~98', outfile=smooth_name+'.mom1')
+#cts.immoments(axis='spec', imagename=smooth_name, moments=1, region=region, includepix=[2e-3,170] , chans='90~98', outfile=smooth_name+'.mom1')
 

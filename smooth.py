@@ -10,7 +10,7 @@ vel_res = str(vel_res1)+'km/s'
 file_name = str(vel_res1)+'kmps'
 uvran = '0.5~5klambda'
 imagename = outdir+target+'_cube_'+str(file_name)+'/'+'uvran_'+str(uvran)+'.image'
-
+imagename = '/Data/omkar/HI_DATA/quenched_hi/out_AGC722572/AGC722572_cube_multiscale_7kmps/uvran_0.5~5klambda.image'
 
 print(imagename)
 # Gauss smooth the image

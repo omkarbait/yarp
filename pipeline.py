@@ -19,10 +19,16 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
     if doinitial_flagging:
         flag_spw = params['flagging']['spw']
         bad_ants = params['flagging']['badants']
+        flagcmd = params['flagging']['flagcmd']
         if len(bad_ants) != 0:
             flg.badantflag(msfile, params)
         else:
             print('No bad antennas found.')
+        if flagcmd != False:
+            print('Flagging based on user defined commands ...')
+            cts.flagdata(msfile, mode='list', inpfile=flagcmd)
+        else:
+            None
         cts.flagdata(msfile, mode='quack', field='', spw='0', antenna='', correlation='', timerange='',
                      quackinterval=10, quackmode='beg', action='apply', savepars=True, cmdreason='quackbeg')
         cts.flagdata(msfile, mode='quack', field='', spw='0', antenna='', correlation='', timerange='',
@@ -116,7 +122,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
 
         targetcalfile = params['general']['targetcalfile']
         cont_sub_file = targetcalfile+'.contsub'
-        #subprocess.run('mv {} {}'.format(cont_sub_file, outdir),
+        # subprocess.run('mv {} {}'.format(cont_sub_file, outdir),
         #               shell=True, check=True)
     else:
         print('No uvsub this time.')
@@ -129,7 +135,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         targetcalfile = params['general']['targetcalfile']
         restfreq = '1.420405752GHz'
         cont_sub_file = targetcalfile+'.contsub'
-	#cont_sub_file = cont_sub_file
+        #cont_sub_file = cont_sub_file
         weighting = params['cube']['weighting']
         robust = params['cube']['robust']
         deconvolver = params['cube']['deconvolver']
@@ -188,7 +194,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
     subprocess.run('cp {} {}'.format(
         'parameters.yaml', outdir), shell=True, check=True)
 
-    return print('yarrp pipeline ended.')
+    return print('yarp pipeline ended.')
 
 
 if __name__ == "__main__":
@@ -197,5 +203,5 @@ if __name__ == "__main__":
     msfile = general_params['msfile']
     outdir = general_params['outdir']
     fluxcal = general_params['fluxcal']
-    pipeline(msfile, params, doinitial_flagging=False, doflagcal=False,
-             doimagecal=False, douvsub=False, docubeimage=True)
+    pipeline(msfile, params, doinitial_flagging=True, doflagcal=True,
+             doimagecal=False, douvsub=False, docubeimage=False)

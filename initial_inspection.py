@@ -19,7 +19,7 @@ try:
 	os.system('mkdir ' + outdir+'listscan/')
 except:
 	None
-#default(listobs)
+
 cts.listobs(vis=msfile, listfile=outdir+'listscan/listobs.txt', overwrite=True)
 print('listobs saved in '+ outdir+'listscan/listobs.txt')
 
