@@ -580,32 +580,43 @@ def flagcal_bl(msfile, params, niters=1, flagger='default', interactive=False):
     return print('Flagcal with blcal script done.')
 
 
-def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='default', interactive=False):
+def imagecal_dev(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='default', interactive=False):
     '''
+    This is the current development/testing version of imagecal.
     This function takes in a calibrated target file (usually the channel averaged file) and goes through "niters" of imagecal loops. A imagecal loop is defined as first making a image using imgr.tcleaner. Then "ploops" of phase-only self-cal and "aploops" of a&p selfcal. Then the continuum image is subtracted from the UV data and the residuals are flagged. After having gone through all the "niters" loop it spits out a final continuum image.
+    This version doesnt make several ms files.
+
+    Algorithm in brief:
     '''
 
     imaging_params = params['imagecal']
     outimage = imaging_params['outimage']
     target = params['general']['target']
-    threshold_range = imaging_params['threshold_range']
+    threshold_range_p = imaging_params['threshold_range_p']
+    threshold_range_ap = imaging_params['threshold_range_ap']
     threshold_final = imaging_params['threshold_final']
-    solints = imaging_params['solints']
-    niter_range = imaging_params['niter_range']
+    solints_p = imaging_params['solints_p']
+    solints_ap = imaging_params['solints_ap']
+    niter_range_p = imaging_params['niter_range_p']
     tempdir = params['general']['temp']
     outdir = params['general']['outdir']
-
+    nterms = imaging_params['nterms']
     # Preparing the ranges of different parameters for the loops
-    solint_range = np.linspace(solints[0], solints[1], ploops)
+    # Here solint_range refers only to the phase only loops
+    solint_range = np.linspace(solints_p[0], solints_p[1], ploops)
     solint_range = [str(i)+'min' for i in solint_range]
+    # Here solint_range refers only to the ap loops
+    solint_range_ap = np.linspace(solints_ap[0], solints_ap[1], aploops)
+    solint_range_ap = [str(i)+'min' for i in solint_range_ap]
     threshold_range = np.linspace(
-        threshold_range[0], threshold_range[1], ploops)
+        threshold_range_p[0], threshold_range_p[1], ploops)
     threshold_range = [str(i)+'mJy' for i in threshold_range]
-
-    niter_range = np.linspace(niter_range[0], niter_range[1], ploops)
+    threshold_range_ap = np.linspace(
+        threshold_range_ap[0], threshold_range_ap[1], aploops)
+    threshold_range_ap = [str(i)+'mJy' for i in threshold_range_ap]
+    niter_range = np.linspace(niter_range_p[0], niter_range_p[1], ploops)
     niter_range = [int(i) for i in niter_range]
-    # Initially begin with the avspc file, and then change this file name to the running self-cal file
-    sc_ap_msfile = targetcalfile
+    # sc_ap_msfile = targetcalfile # Initially begin with the avspc file, and then change this file name to the running self-cal file
     nloop_index = 1 + np.arange(nloops)  # The nloop index to the files names
 
     # Making list to save the relevant stats of the images in the various self-cal looops
@@ -619,17 +630,20 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
     for nindex in nloop_index:
         # subprocess.run('rm -r {}'.format(temp_dir), shell=True, check=True) # Clearing the temp directory
         # subprocess.run('mkdir {}'.format(temp_dir), shell=True, check=True)
-        # This gives the index to the cont image and cal files created later
+        # This gives the index to the cal files created later
         ploop_index = 1 + np.arange(ploops)
-        # start again with the avspcfile ms file name for the next round of self-cals
-        sc_p_msfile = targetcalfile
+
         for pindex in ploop_index:  # Run all the ploops
             print('Self-cal phase-only loop', pindex)
-            imgr.tcleaner(sc_p_msfile, params, threshold=threshold_range[pindex - 1], niter=niter_range[pindex - 1],
+            imgr.tcleaner(targetcalfile, params, threshold=threshold_range[pindex - 1], niter=niter_range[pindex - 1],
                           outimage=tempdir+outimage+'_sc_p.'+str(nindex)+str(pindex), interactive=interactive)
             # Adding imstats in the list
-            imagename = tempdir+outimage+'_sc_p.' + \
-                str(nindex)+str(pindex)+'.image.tt0'
+            if nterms > 1:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(pindex)+'.image.tt0'
+            else:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(pindex)+'.image'
             type_list.append('p')
             loop_list.append(nindex)
             index_list.append(pindex)
@@ -637,33 +651,36 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
             rms_list.append(rms)
             peakflux_list.append(peakflux)
 
-            clb.selfcal(sc_p_msfile, params, mode='p', in_gaintable=[], out_gaintable=tempdir +
-                        'sc_p.gcal.'+str(nindex)+str(pindex), solint=solint_range[pindex - 1], solnorm=False)
+            clb.selfcal(targetcalfile, params, mode='p', in_gaintable=[], out_gaintable=tempdir +
+                        'sc_p.gcal.'+str(nindex)+str(pindex), solint=solint_range[pindex - 1])
             # Change the gaintable to the latest
             gaintable = [tempdir+'sc_p.gcal.'+str(nindex)+str(pindex)]
+            cts.applycal(targetcalfile, gaintable=gaintable, field='', gainfield='',
+                         applymode='calflag', interp=['linearperobs'], calwt=False, parang=False)
 
-            cts.applycal(sc_p_msfile, gaintable=gaintable, field='', gainfield='',
-                         applymode='calonly', interp=['linear'], calwt=False, parang=False)
-            cts.mstransform(sc_p_msfile, field='0', spw='0', datacolumn='corrected',
-                            outputvis=tempdir+'sc_p_'+str(nindex)+str(pindex)+'.ms')
-            sc_p_msfile = tempdir+'sc_p_'+str(nindex)+str(pindex)+'.ms'
-
-        final_pcal_table = gaintable  # The final pcal table to be returned in the end
+        final_pcal_table = [tempdir+'sc_p.gcal.'+str(nindex)+str(pindex)]
 
         # This gives the index to the cont image and cal files created later
         aploop_index = 1 + np.arange(aploops)
-        sc_ap_msfile = sc_p_msfile  # Beginning with the pfile
         niter_ap = niter_range[-1]  # The last object in pcal niters
-        threshold_ap = threshold_range[-1]
-        solint_ap = solint_range[-1]
+        threshold_ap = threshold_range_ap
+        solint_ap = solint_range_ap
+        print('Solint range for ap:', solint_ap)
         for apindex in aploop_index:  # Run all the aploops
             print('Self-cal a&p loop', apindex)
-            imgr.tcleaner(sc_ap_msfile, params, threshold=threshold_ap, niter=niter_ap,
+            imgr.tcleaner(targetcalfile, params, threshold=threshold_ap[apindex - 1], niter=niter_ap,
                           outimage=tempdir+outimage+'_sc_ap.'+str(nindex)+str(apindex), interactive=interactive)
 
             # Adding the self cal ap loop imstats in the list
-            imagename = tempdir+outimage+'_sc_ap.' + \
-                str(nindex)+str(apindex)+'.image.tt0'
+            # imagename = tempdir+outimage+'_sc_ap.' + \
+            #    str(nindex)+str(apindex)+'.image.tt0'
+
+            if nterms > 1:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(apindex)+'.image.tt0'
+            else:
+                imagename = tempdir+outimage+'_sc_p.' + \
+                    str(nindex)+str(apindex)+'.image'
             type_list.append('ap')
             loop_list.append(nindex)
             index_list.append(apindex)
@@ -671,15 +688,14 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
             rms_list.append(rms)
             peakflux_list.append(peakflux)
 
-            clb.selfcal(sc_ap_msfile, params, mode='a&p', in_gaintable=[], out_gaintable=tempdir +
-                        'sc_ap.gcal.'+str(nindex)+str(apindex), solint=solint_ap, solnorm=True)
-            # Change the gaintable to the latest
-            gaintable = [tempdir+'sc_ap.gcal.'+str(nindex)+str(apindex)]
-            cts.applycal(sc_ap_msfile, gaintable=gaintable, field='', gainfield='',
-                         applymode='calonly', interp=['linear'], calwt=False, parang=False)
-            cts.mstransform(sc_ap_msfile, field='0', spw='0', datacolumn='corrected',
-                            outputvis=tempdir+'sc_ap_'+str(nindex)+str(apindex)+'.ms')
-            sc_ap_msfile = tempdir+'sc_ap_'+str(nindex)+str(apindex)+'.ms'
+            clb.selfcal(targetcalfile, params, mode='ap', in_gaintable=[
+            ], out_gaintable=tempdir+'sc_ap.gcal.'+str(nindex)+str(apindex), solint=solint_ap[apindex - 1])
+            # Change the gaintable to the latest, this will also have the phaseonly calibration solutions applied.
+            gaintable = final_pcal_table + \
+                [tempdir+'sc_ap.gcal.'+str(nindex)+str(apindex)]
+            print('Selfcal ap gaintable to be applied:', gaintable)
+            cts.applycal(targetcalfile, gaintable=gaintable, field='', gainfield='',
+                         applymode='calflag', interp=['linearperobs'], calwt=False, parang=False)
 
         # Create an intermediate model for outlier flagging.
         imaging_params = params['imagecal']
@@ -698,7 +714,7 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
         scales = imaging_params['scales']
 
         if nterms > 1:
-            cts.tclean(sc_ap_msfile, imagename=tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex), field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+            cts.tclean(targetcalfile, imagename=tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex), field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
                        specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
                        minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6,
                        threshold=threshold, aterm=True, pblimit=-1, deconvolver='mtmfs',
@@ -706,15 +722,21 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
                        restoration=True, savemodel='modelcolumn', cyclefactor=0.5, parallel=False,
                        interactive=False)
         elif nterms == 1:
-            cts.tclean(sc_ap_msfile, imagename=tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex), field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+            cts.tclean(targetcalfile, imagename=tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex), field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
                        specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
                        minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6, threshold=threshold,
                        aterm=True, pblimit=-1, deconvolver='multiscale', gridder='wproject',
                        wprojplanes=wprojplanes, scales=scales, wbawp=False, restoration=True,
                        savemodel='modelcolumn', cyclefactor=0.5, parallel=False, interactive=False)
 
-        imagename = tempdir+outimage+'_sc_ap_final.' + \
-            str(nindex)+str(apindex)+'.image.tt0'
+        if nterms > 1:
+            imagename = tempdir+outimage+'_sc_ap_final.' + \
+                str(nindex)+str(apindex)+'.image.tt0'
+        else:
+            imagename = tempdir+outimage+'_sc_ap_final.' + \
+                str(nindex)+str(apindex)+'.image'
+        # imagename = tempdir+outimage+'_sc_ap_final.' + \
+        #    str(nindex)+str(apindex)+'.image.tt0'
         type_list.append('final')
         loop_list.append(nindex)
         index_list.append(-99)
@@ -723,25 +745,11 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
         peakflux_list.append(peakflux)
 
         '''
-        0) Clear all the model and calibration table from the avspc file.
-        1) Apply the final calibration table to the avspc file.
-        2) Copy the final model to the avspc file,
-        3) uvsub --> rflag --> undo-uvsub
-        4) Clear the model again
-        5) Repeat self-cal
+        1) uvsub --> rflag --> undo-uvsub
+        2) Clear the model again
+        3) Repeat self-cal
         '''
-        print('Clearing the corrected column and the tclean model...')
-
-        cts.clearcal(targetcalfile)  # Removes the corrected datacolumn
-        cts.delmod(targetcalfile)  # Removes the tclean model
-        cts.applycal(targetcalfile, gaintable=gaintable, field='', gainfield='', applymode='calonly', interp=[
-                     'linear'], calwt=False, parang=False)  # Apply the latest calibration table from the last loop
-        if nterms == 2:
-            cts.ft(targetcalfile, spw='0', nterms=nterms, model=[tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(
-                apindex)+'.model.tt0', tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex)+'.model.tt1'], usescratch=True)  # Copy the finale model from the tempfile
-        elif nterms == 1:
-            cts.ft(targetcalfile, spw='0', nterms=nterms, model=[tempdir+outimage+'_sc_ap_final.'+str(
-                nindex)+str(apindex)+'.model.tt0'], usescratch=True)  # Copy the finale model from the tempfile
+        print('uvsub and rflagging the data...')
 
         cts.uvsub(targetcalfile, reverse=False)
         flg.rflagger(targetcalfile, params, field=target,
@@ -750,14 +758,6 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
                    grow=80, instance='postcal')
         # Adding the corrected-data and residuals
         cts.uvsub(targetcalfile, reverse=True)
-
-        if nindex == np.max(nloop_index):
-            # Dont clear the corrected dataset for the final loop.
-            break
-        else:
-            # Clearcal to start fresh
-            cts.clearcal(targetcalfile)  # Removes the corrected datacolumn
-            cts.delmod(targetcalfile)  # Removes the tclean model
 
     t = Table((np.array(loop_list), np.array(type_list), np.array(index_list), np.array(
         rms_list), np.array(peakflux_list)), names=('loop', 'type', 'index', 'rms', 'peakflux'))
@@ -784,7 +784,7 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
     plt.ylabel('Dynamic Range')
     plt.savefig(outdir+'sc_iter.png')
 
-    # Self-cal loops overV
+    # Self-cal loops over
     outdir_ap_gaintable = [outdir+'sc_ap.gcal.'+str(nindex)+str(apindex)]
     outdir_p_gaintable = [outdir+'sc_p.gcal.'+str(nindex)+str(pindex)]
 
@@ -815,7 +815,7 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
     final_image = outdir+outimage+'_final'
 
     if nterms > 1:
-        cts.tclean(sc_ap_msfile, imagename=final_image, field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+        cts.tclean(targetcalfile, imagename=final_image, field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
                    specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
                    minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6,
                    threshold=threshold, aterm=True, pblimit=-1, deconvolver='mtmfs',
@@ -823,7 +823,7 @@ def imagecal(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='defa
                    restoration=True, savemodel='modelcolumn', cyclefactor=0.5, parallel=False,
                    interactive=False)
     elif nterms == 1:
-        cts.tclean(sc_ap_msfile, imagename=final_image, field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+        cts.tclean(targetcalfile, imagename=final_image, field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
                    specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
                    minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6, threshold=threshold,
                    aterm=True, pblimit=-1, deconvolver='multiscale', gridder='wproject',
@@ -1075,3 +1075,277 @@ def imagecal2(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='def
     print('Imaging and self-calibration done.')
 
     return final_image, outdir_p_gaintable+outdir_ap_gaintable
+
+
+def imagecal_old(targetcalfile, params, nloops=1, ploops=5, aploops=1, flagger='default', interactive=False):
+    '''
+    This function takes in a calibrated target file (usually the channel averaged file) and goes through "niters" of imagecal loops. A imagecal loop is defined as first making a image using imgr.tcleaner. Then "ploops" of phase-only self-cal and "aploops" of a&p selfcal. Then the continuum image is subtracted from the UV data and the residuals are flagged. After having gone through all the "niters" loop it spits out a final continuum image.
+    '''
+
+    imaging_params = params['imagecal']
+    outimage = imaging_params['outimage']
+    target = params['general']['target']
+    threshold_range = imaging_params['threshold_range']
+    threshold_final = imaging_params['threshold_final']
+    solints = imaging_params['solints']
+    niter_range = imaging_params['niter_range']
+    tempdir = params['general']['temp']
+    outdir = params['general']['outdir']
+
+    # Preparing the ranges of different parameters for the loops
+    solint_range = np.linspace(solints[0], solints[1], ploops)
+    solint_range = [str(i)+'min' for i in solint_range]
+    threshold_range = np.linspace(
+        threshold_range[0], threshold_range[1], ploops)
+    threshold_range = [str(i)+'mJy' for i in threshold_range]
+
+    niter_range = np.linspace(niter_range[0], niter_range[1], ploops)
+    niter_range = [int(i) for i in niter_range]
+    # Initially begin with the avspc file, and then change this file name to the running self-cal file
+    sc_ap_msfile = targetcalfile
+    nloop_index = 1 + np.arange(nloops)  # The nloop index to the files names
+
+    # Making list to save the relevant stats of the images in the various self-cal looops
+    regionfile = params['imagecal']['regionfile']
+    type_list = []
+    index_list = []
+    loop_list = []
+    rms_list = []
+    peakflux_list = []
+
+    for nindex in nloop_index:
+        # subprocess.run('rm -r {}'.format(temp_dir), shell=True, check=True) # Clearing the temp directory
+        # subprocess.run('mkdir {}'.format(temp_dir), shell=True, check=True)
+        # This gives the index to the cont image and cal files created later
+        ploop_index = 1 + np.arange(ploops)
+        # start again with the avspcfile ms file name for the next round of self-cals
+        sc_p_msfile = targetcalfile
+        for pindex in ploop_index:  # Run all the ploops
+            print('Self-cal phase-only loop', pindex)
+            imgr.tcleaner(sc_p_msfile, params, threshold=threshold_range[pindex - 1], niter=niter_range[pindex - 1],
+                          outimage=tempdir+outimage+'_sc_p.'+str(nindex)+str(pindex), interactive=interactive)
+            # Adding imstats in the list
+            imagename = tempdir+outimage+'_sc_p.' + \
+                str(nindex)+str(pindex)+'.image.tt0'
+            type_list.append('p')
+            loop_list.append(nindex)
+            index_list.append(pindex)
+            rms, peakflux = stats(imagename, regionfile)
+            rms_list.append(rms)
+            peakflux_list.append(peakflux)
+
+            clb.selfcal(sc_p_msfile, params, mode='p', in_gaintable=[], out_gaintable=tempdir +
+                        'sc_p.gcal.'+str(nindex)+str(pindex), solint=solint_range[pindex - 1], solnorm=False)
+            # Change the gaintable to the latest
+            gaintable = [tempdir+'sc_p.gcal.'+str(nindex)+str(pindex)]
+
+            cts.applycal(sc_p_msfile, gaintable=gaintable, field='', gainfield='',
+                         applymode='calonly', interp=['linear'], calwt=False, parang=False)
+            cts.mstransform(sc_p_msfile, field='0', spw='0', datacolumn='corrected',
+                            outputvis=tempdir+'sc_p_'+str(nindex)+str(pindex)+'.ms')
+            sc_p_msfile = tempdir+'sc_p_'+str(nindex)+str(pindex)+'.ms'
+
+        final_pcal_table = gaintable  # The final pcal table to be returned in the end
+
+        # This gives the index to the cont image and cal files created later
+        aploop_index = 1 + np.arange(aploops)
+        sc_ap_msfile = sc_p_msfile  # Beginning with the pfile
+        niter_ap = niter_range[-1]  # The last object in pcal niters
+        threshold_ap = threshold_range[-1]
+        solint_ap = solint_range[-1]
+        for apindex in aploop_index:  # Run all the aploops
+            print('Self-cal a&p loop', apindex)
+            imgr.tcleaner(sc_ap_msfile, params, threshold=threshold_ap, niter=niter_ap,
+                          outimage=tempdir+outimage+'_sc_ap.'+str(nindex)+str(apindex), interactive=interactive)
+
+            # Adding the self cal ap loop imstats in the list
+            imagename = tempdir+outimage+'_sc_ap.' + \
+                str(nindex)+str(apindex)+'.image.tt0'
+            type_list.append('ap')
+            loop_list.append(nindex)
+            index_list.append(apindex)
+            rms, peakflux = stats(imagename, regionfile)
+            rms_list.append(rms)
+            peakflux_list.append(peakflux)
+
+            clb.selfcal(sc_ap_msfile, params, mode='a&p', in_gaintable=[], out_gaintable=tempdir +
+                        'sc_ap.gcal.'+str(nindex)+str(apindex), solint=solint_ap, solnorm=True)
+            # Change the gaintable to the latest
+            gaintable = [tempdir+'sc_ap.gcal.'+str(nindex)+str(apindex)]
+            cts.applycal(sc_ap_msfile, gaintable=gaintable, field='', gainfield='',
+                         applymode='calonly', interp=['linear'], calwt=False, parang=False)
+            cts.mstransform(sc_ap_msfile, field='0', spw='0', datacolumn='corrected',
+                            outputvis=tempdir+'sc_ap_'+str(nindex)+str(apindex)+'.ms')
+            sc_ap_msfile = tempdir+'sc_ap_'+str(nindex)+str(apindex)+'.ms'
+
+        # Create an intermediate model for outlier flagging.
+        imaging_params = params['imagecal']
+        outimage = imaging_params['outimage']
+        target = params['general']['target']
+        imsize = imaging_params['imsize']
+        cell = imaging_params['cell']
+        robust = imaging_params['robust']
+        weighting = imaging_params['weighting']
+        uvran = imaging_params['uvran']
+        uvtaper = imaging_params['uvtaper']
+        nterms = imaging_params['nterms']
+        niter = 100000  # niter_ap
+        threshold = str(threshold_final)+'mJy'
+        wprojplanes = imaging_params['wprojplanes']
+        scales = imaging_params['scales']
+
+        if nterms > 1:
+            cts.tclean(sc_ap_msfile, imagename=tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex), field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+                       specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
+                       minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6,
+                       threshold=threshold, aterm=True, pblimit=-1, deconvolver='mtmfs',
+                       gridder='wproject', wprojplanes=wprojplanes, scales=scales, wbawp=False,
+                       restoration=True, savemodel='modelcolumn', cyclefactor=0.5, parallel=False,
+                       interactive=False)
+        elif nterms == 1:
+            cts.tclean(sc_ap_msfile, imagename=tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex), field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+                       specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
+                       minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6, threshold=threshold,
+                       aterm=True, pblimit=-1, deconvolver='multiscale', gridder='wproject',
+                       wprojplanes=wprojplanes, scales=scales, wbawp=False, restoration=True,
+                       savemodel='modelcolumn', cyclefactor=0.5, parallel=False, interactive=False)
+
+        imagename = tempdir+outimage+'_sc_ap_final.' + \
+            str(nindex)+str(apindex)+'.image.tt0'
+        type_list.append('final')
+        loop_list.append(nindex)
+        index_list.append(-99)
+        rms, peakflux = stats(imagename, regionfile)
+        rms_list.append(rms)
+        peakflux_list.append(peakflux)
+
+        '''
+        0) Clear all the model and calibration table from the avspc file.
+        1) Apply the final calibration table to the avspc file.
+        2) Copy the final model to the avspc file,
+        3) uvsub --> rflag --> undo-uvsub
+        4) Clear the model again
+        5) Repeat self-cal
+        '''
+        print('Clearing the corrected column and the tclean model...')
+
+        cts.clearcal(targetcalfile)  # Removes the corrected datacolumn
+        cts.delmod(targetcalfile)  # Removes the tclean model
+        cts.applycal(targetcalfile, gaintable=gaintable, field='', gainfield='', applymode='calonly', interp=[
+                     'linear'], calwt=False, parang=False)  # Apply the latest calibration table from the last loop
+        if nterms == 2:
+            cts.ft(targetcalfile, spw='0', nterms=nterms, model=[tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(
+                apindex)+'.model.tt0', tempdir+outimage+'_sc_ap_final.'+str(nindex)+str(apindex)+'.model.tt1'], usescratch=True)  # Copy the finale model from the tempfile
+        elif nterms == 1:
+            cts.ft(targetcalfile, spw='0', nterms=nterms, model=[tempdir+outimage+'_sc_ap_final.'+str(
+                nindex)+str(apindex)+'.model.tt0'], usescratch=True)  # Copy the finale model from the tempfile
+
+        cts.uvsub(targetcalfile, reverse=False)
+        flg.rflagger(targetcalfile, params, field=target,
+                     tcut=6, fcut=6, instance='postcal')
+        flg.extend(targetcalfile, params, field=target,
+                   grow=80, instance='postcal')
+        # Adding the corrected-data and residuals
+        cts.uvsub(targetcalfile, reverse=True)
+
+        if nindex == np.max(nloop_index):
+            # Dont clear the corrected dataset for the final loop.
+            break
+        else:
+            # Clearcal to start fresh
+            cts.clearcal(targetcalfile)  # Removes the corrected datacolumn
+            cts.delmod(targetcalfile)  # Removes the tclean model
+
+    t = Table((np.array(loop_list), np.array(type_list), np.array(index_list), np.array(
+        rms_list), np.array(peakflux_list)), names=('loop', 'type', 'index', 'rms', 'peakflux'))
+    t.write(outdir+'selfcal_table.txt', format='ascii', overwrite=True)
+
+    for i in nloop_index:
+        sub_table = t[np.where(t['loop'] == i)[0]]
+        markers = ['o', '^', '*']
+        index_add = 0
+        for k, j in enumerate(['p', 'ap', 'final']):
+            sub_subtable = sub_table[np.where(sub_table['type'] == j)[0]]
+            if j == 'ap':
+                index_add = len(ploop_index)
+
+            elif j == 'final':
+                index_add = 100 + len(ploop_index) + len(aploop_index)
+            else:
+                None
+            dyna_range = sub_subtable['peakflux']/sub_subtable['rms']
+            plt.plot(sub_subtable['index']+index_add,
+                     dyna_range, marker=markers[k])
+
+    plt.xlabel('Self-cal iteration')
+    plt.ylabel('Dynamic Range')
+    plt.savefig(outdir+'sc_iter.png')
+
+    # Self-cal loops overV
+    outdir_ap_gaintable = [outdir+'sc_ap.gcal.'+str(nindex)+str(apindex)]
+    outdir_p_gaintable = [outdir+'sc_p.gcal.'+str(nindex)+str(pindex)]
+
+    # cp the final gaintable to the outdir
+    subprocess.run(
+        'cp -r {} {}'.format(gaintable[0], outdir_ap_gaintable[0]), shell=True, check=True)
+    # cp the final gaintable to the outdir
+    subprocess.run(
+        'cp -r {} {}'.format(final_pcal_table[0], outdir_p_gaintable[0]), shell=True, check=True)
+    print('Self-cal loops over.')
+
+    print('Making a final continuum  image...')
+
+    imaging_params = params['imagecal']
+    outimage = imaging_params['outimage']
+    target = params['general']['target']
+    imsize = imaging_params['imsize']
+    cell = imaging_params['cell']
+    robust = imaging_params['robust']
+    weighting = imaging_params['weighting']
+    uvran = imaging_params['uvran']
+    uvtaper = imaging_params['uvtaper']
+    nterms = imaging_params['nterms']
+    niter = 10000  # niter_ap
+    threshold = str(threshold_final)+'mJy'
+    wprojplanes = imaging_params['wprojplanes']
+    scales = imaging_params['scales']
+    final_image = outdir+outimage+'_final'
+
+    if nterms > 1:
+        cts.tclean(sc_ap_msfile, imagename=final_image, field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+                   specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
+                   minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6,
+                   threshold=threshold, aterm=True, pblimit=-1, deconvolver='mtmfs',
+                   gridder='wproject', wprojplanes=wprojplanes, scales=scales, wbawp=False,
+                   restoration=True, savemodel='modelcolumn', cyclefactor=0.5, parallel=False,
+                   interactive=False)
+    elif nterms == 1:
+        cts.tclean(sc_ap_msfile, imagename=final_image, field=target, spw='0', imsize=imsize, cell=cell,                   robust=robust, weighting=weighting, uvrange=uvran, uvtaper=uvtaper,
+                   specmode='mfs', nterms=nterms, niter=niter, usemask='auto-multithresh',
+                   minbeamfrac=0.1, sidelobethreshold=1.5, smallscalebias=0.6, threshold=threshold,
+                   aterm=True, pblimit=-1, deconvolver='multiscale', gridder='wproject',
+                   wprojplanes=wprojplanes, scales=scales, wbawp=False, restoration=True,
+                   savemodel='modelcolumn', cyclefactor=0.5, parallel=False, interactive=False)
+
+    print('Imaging and self-calibration done.')
+
+    return final_image, outdir_p_gaintable+outdir_ap_gaintable
+
+def uvsubber(msfile, params, fitspw, fitorder=1, nterms=1, model_image=['image.model.tt0','image.model.tt1']):
+    '''
+    Subtracts the model from the uvdata. Splits it out as a uvsub file. The fits polynomials to remove residual uvcont.
+    '''
+    # Convert a model and fill in the model column of the msfile
+    cts.ft(vis=msfile, spw='0', nterms=nterms, model=model_image, usescratch=False) 
+    print('ft loaded')
+    # Do a uvsub
+    cts.uvsub(msfile, reverse=False)
+    # Split out the uvsub file
+    cts.mstransform(msfile, field='0', spw='0', chanaverage=False,
+                    datacolumn='corrected', outputvis=msfile+'.uvsub')
+    # undo uvsub of the outputfile
+    cts.uvsub(msfile, reverse=True)
+    # uvcontsub to remove residual continuum
+    #cts.uvcontsub(msfile+'.uvsub', fitspw=fitspw, fitorder=fitorder, solint='int', combine='scan')
+    return print('uvsub done using uvsubber...')
+

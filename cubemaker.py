@@ -32,11 +32,11 @@ deconvolver = params['cube']['deconvolver']
 #cellsize_list = ['1arcsec']
 #threshold_list = ['1.0mJy']
 
-uvran_list = ['0.5~5klambda', '0.5~20klambda']
-uvtaper_list = ['4.5klambda', '12klambda']
-imsize_list = [256, 540]
-cellsize_list = ['8arcsec', '3arcsec']
-threshold_list = ['1mJy', '1.0mJy']
+uvran_list = ['0.5~10klambda', '0.5~20klambda',]
+uvtaper_list = ['6klambda', '12klambda']
+imsize_list = [512, 540]
+cellsize_list = ['4arcsec', '3arcsec']
+threshold_list = ['1mJy', '1mJy']
 
 vel_res1 = params['cube']['vel_res']
 vel_res = str(vel_res1)+'km/s'
@@ -45,7 +45,7 @@ file_name = str(vel_res1)+'kmps'
 for i in range(len(uvran_list)):
     print('Running the ', uvran_list[i], 'resolution cube...')
     cts.tclean(cont_sub_file, 
-            imagename = outdir+target+'_cube_multiscale_'+str(file_name)+'/'+'uvran_'+str(uvran_list[i]),
+            imagename = outdir+target+'_cube_'+str(file_name)+'/'+'uvran_'+str(uvran_list[i]),
             field = '0',
             spw = '0',
             specmode = 'cube',
@@ -54,8 +54,8 @@ for i in range(len(uvran_list)):
             outframe = 'bary',
             veltype = 'optical',
             restfreq = restfreq,
-            deconvolver= 'multiscale', #'hogbom',
-            scales = [0, 5, 15],
+            deconvolver= 'hogbom',
+            #scales = [0, 5, 15],
             gridder = 'standard',
             uvrange = uvran_list[i],
             uvtaper = uvtaper_list[i],

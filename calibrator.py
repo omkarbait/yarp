@@ -106,9 +106,16 @@ def apcal(msfile, params, field=None):
     return print('Amplitude and phase calibration done for ', field)
 
 
-def selfcal(msfile, params, mode='p', in_gaintable=[], out_gaintable='sc_p.test.gcal', solint='8min', solnorm=False):
+def selfcal(msfile, params, mode='p', in_gaintable=[], out_gaintable='sc_p.test.gcal', solint='8min'):
     refant = params['flagging']['refant']
     #print(gaintables, 'before selfcal')
-    cts.gaincal(msfile, caltable=out_gaintable, append=False, field='0', spw='0', uvrange='', solint=solint, refant=refant, minsnr=2.0,
-                gaintype='G', solnorm=solnorm, calmode='p', solmode='R', gaintable=in_gaintable, interp=['linear, linear'], parang=True)
+    if mode == 'p':
+        minsnr = 3.0
+        solnorm = False
+    elif mode == 'ap':
+        minsnr = 3.0
+        solnorm = True
+
+    cts.gaincal(msfile, caltable=out_gaintable, append=False, field='0', spw='0', uvrange='', solint=solint, refant=refant, minsnr=minsnr,
+                gaintype='G', solnorm=solnorm, calmode=mode, solmode='R', gaintable=in_gaintable, interp=['nearestobsid, nearestobsid'], parang=False)
     return None

@@ -3,7 +3,7 @@ import flagger as flg
 import calibrator as clb
 import casatasks as cts
 import subprocess
-from recipes import flagcal, flagcal2, flagcal_bl, imagecal, imagecal2
+from recipes import flagcal, flagcal2, flagcal_bl, imagecal_dev, imagecal2, uvsubber
 
 
 def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal=True, douvsub=True, docubeimage=False):
@@ -72,6 +72,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         print('Rflagging the channel averaged file...')
         flg.rflagger(avspcfile, params, field=target,
                      tcut=10, fcut=10, instance='initial')
+        print('Flagging the line spws...')
         flag_spw = params['imagecal']['spec_line_spw']
         cts.flagdata(avspcfile, mode='manual', spw=flag_spw)
         print('Doing imaging and self-calibration...')
@@ -81,7 +82,7 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         aploops = params['imagecal']['aploops']
         print('Running {} cycles of self-cal with {} ploops and {} aploops in each cycle...'.format(
             str(nloops), str(ploops), str(aploops)))
-        final_image, selfcaltable = imagecal2(
+        final_image, selfcaltable = imagecal_dev(
             avspcfile, params, nloops=nloops, ploops=ploops, aploops=aploops, flagger='default', interactive=False)
         print('Final self-cal table is', selfcaltable)
 
@@ -98,30 +99,38 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         aploops = params['imagecal']['aploops']
         outdir = params['general']['outdir']
         # apply self-cal table to the full chan resolution file
-        selfcaltable = [outdir+'sc_p.gcal.' +
-                        str(nloops)+str(ploops), outdir+'sc_ap.gcal.'+str(nloops)+str(aploops)]
+        # selfcaltable = [outdir+'sc_p.gcal.' +
+        #                str(nloops)+str(ploops), outdir+'sc_ap.gcal.'+str(nloops)+str(aploops)]
+        '''
+	selfcaltable = [outdir+'sc_p.gcal.' +
+                        str(1)+str(5)]
+        print(selfcaltable)
         cts.applycal(targetcalfile, gaintable=selfcaltable, field='', gainfield='',
-                     applymode='calonly', interp=['linear'], calwt=False, parang=False)
+                     applymode='calonly', interp=['linearperobs'], calwt=False, parang=False)
 
         print('Rflagging the self-calibrated data')
-        linefreespw = params['uvsub']['linefreespw']
+        '''
+	linefreespw = params['uvsub']['linefreespw']
         linespw = params['uvsub']['linespw']
-        flg.rflagger(targetcalfile, params, spw=linefreespw, field=target, tcut=6,
+        '''
+	flg.rflagger(targetcalfile, params, spw=linefreespw, field=target, tcut=6,
                      fcut=6, instance='postcal')  # deep flag the line free channels
         flg.rflagger(targetcalfile, params, spw=linespw, field=target, tcut=10,
                      fcut=10, instance='postcal')  # Be  more conservative on the line channels
         flg.extend(targetcalfile, params, field=target,
                    grow=80, instance='postcal')
-
-        # UVLIN the full chan resolution file
+        '''
+	# UVLIN the full chan resolution file
         print('Doing uvcontsub...')
 
         fitorder = params['uvsub']['fitorder']
         # print(linefreespw)
-        cts.uvcontsub(targetcalfile, fitspw=linefreespw, fitorder=fitorder)
-
+        cts.uvcontsub(targetcalfile, fitspw=linefreespw, fitorder=fitorder, solint='int', combine='scan')
+        #tempdir = params['general']['temp']
+        #uvsubber(targetcalfile, params, fitspw=linefreespw, fitorder=fitorder, nterms=1, 
+	#    model_image=[tempdir+'AGC203001_cont_sc_p.15.model'])
         targetcalfile = params['general']['targetcalfile']
-        cont_sub_file = targetcalfile+'.contsub'
+        cont_sub_file = targetcalfile+'.uvsub.contsub'
         # subprocess.run('mv {} {}'.format(cont_sub_file, outdir),
         #               shell=True, check=True)
     else:
@@ -134,8 +143,9 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         target = params['general']['target']
         targetcalfile = params['general']['targetcalfile']
         restfreq = '1.420405752GHz'
-        cont_sub_file = targetcalfile+'.contsub'
+        #cont_sub_file = targetcalfile+'.contsub'
         #cont_sub_file = cont_sub_file
+        cont_sub_file = targetcalfile+'.contsub'
         weighting = params['cube']['weighting']
         robust = params['cube']['robust']
         deconvolver = params['cube']['deconvolver']
@@ -146,9 +156,9 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
         #cellsize_list = ['8arcsec', '4arcsec', '3arcsec', '1arcsec']
         #threshold_list = ['0.44mJy', '1.0mJy', '1.0mJy', '1.0mJy']
 
-        uvran_list = ['0.5~5klambda']
-        uvtaper_list = ['4.5klambda']
-        imsize_list = [256]
+        uvran_list = ['0.5~6klambda']
+        uvtaper_list = ['5.5klambda']
+        imsize_list = [128]
         cellsize_list = ['8arcsec']
         threshold_list = ['1mJy']
 
@@ -175,8 +185,8 @@ def pipeline(msfile, params, doinitial_flagging=True, doflagcal=True, doimagecal
                        imsize=imsize_list[i],
                        cell=cellsize_list[i],
                        threshold=threshold_list[i],
-                       weighting='natural',  # weighting,
-                       robust=2,  # robust,
+                       weighting=weighting,
+                       robust=robust,
                        restoringbeam='common',
                        interactive=False,
                        usemask='pb',
@@ -203,5 +213,5 @@ if __name__ == "__main__":
     msfile = general_params['msfile']
     outdir = general_params['outdir']
     fluxcal = general_params['fluxcal']
-    pipeline(msfile, params, doinitial_flagging=True, doflagcal=True,
-             doimagecal=False, douvsub=False, docubeimage=False)
+    pipeline(msfile, params, doinitial_flagging=False, doflagcal=False,
+             doimagecal=False, douvsub=True, docubeimage=True)
