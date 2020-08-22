@@ -1,26 +1,24 @@
 calibration:
-  apgaintable: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/apgain.cal
-  bpassgaintable: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/bpassgain.gcal
-  bpasstable: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/bandpass.cal
+  apgaintable: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/apgain.cal
+  bpassgaintable: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/bpassgain.gcal
+  bpasstable: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/bandpass.cal
   ch0_spw: 0:250~300
-  delaytable: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/delays.cal
-  fluxscaletable: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/fluxscale.tbl
+  delaytable: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/delays.cal
+  fluxscaletable: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/fluxscale.tbl
   gaintables:
-  - /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/delays.cal
-  - /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/bandpass.cal
-  - /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/fluxscale.tbl
+  - /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/delays.cal
+  - /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/bandpass.cal
+  - /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan1/out_AGC203001/fluxscale.tbl
   ini_nloops: 1
-  nloops: 1
+  nloops: 5
 cube:
   deconvolver: hogbom
   robust: 0.5
-  vel_res: 7
+  vel_res: 14
   weighting: briggs
 flagging:
   badants:
-  - E04
-  - E05
-  - E06
+  - W06
   beta:
   - 0.7
   - 0.7
@@ -29,9 +27,9 @@ flagging:
   - 6
   - 6
   - 6
-  flagcmd: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/flag.txt
+  flagcmd: false
   refant: C00
-  spw: false
+  spw: 0:0~20;460~511
   tcut_list:
   - 6
   - 6
@@ -45,42 +43,54 @@ general:
   fitsfile: null
   fluxcal:
   - 3C286
+  - 3C147
   fluxscale_list:
   - 15
-  msfile: /Data/omkar/HI_DATA/quenched_hi/AGC723834/AGC723834_cen1K.ms
-  outdir: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/
-  phasecal: 1125+261
+  - 22.5
+  - 1.3401288773440032
+  - 1.340641479445702
+  - 1.3408088943677705
+  - 1.3405736385864535
+  msfile: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan2/AGC203001.ms #Not required
+  outdir: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan2/out_AGC203001/
+  phasecal: 1111+199
   spw: '0'
-  target: AGC723834
-  targetcalfile: /Data/omkar/HI_DATA/quenched_hi/AGC723834/AGC723834_yarp_cal.ms
-  temp: /Data/omkar/HI_DATA/quenched_hi/AGC723834/temp/
+  target: AGC203001
+  targetcalfile: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan2/AGC203001_scan2.ms
+  temp: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan2/temp/
   uvran: 0~100klambda
   yarp_version: v0.9.0
 imagecal:
   aploops: 1
   cell: 0.4
-  chanbin: 82
+  chanbin: 29
   imsize: 4500
-  niter_range:
+  niter_range_p:
   - 2000
   - 5000
   nloops: 2
   nterms: 1
-  outimage: AGC723834_cont
-  ploops: 3
-  regionfile: /Data/omkar/HI_DATA/quenched_hi/AGC723834/out_AGC723834/regions/stats_region.crtf
+  outimage: AGC203001_cont
+  ploops: 5
+  regionfile: /Data/omkar/HI_DATA/quenched_hi/AGC203001/scan2/out_AGC203001/regions/AGC203001_stats_region.crtf
   robust: 0
   scales:
   - 0
   - 5
-  - 15
-  solints:
+  - 10
+  solints_p:
   - 8
   - 1
-  spec_line_spw: 0:5~6
-  threshold_final: 0.05
-  threshold_range:
+  solints_ap:
+  - 15
+  - 15
+  spec_line_spw: '*:1393.37~1395.37MHz'
+  threshold_final: 0.04
+  threshold_range_p:
   - 1
+  - 0.06
+  threshold_range_ap: 
+  - 0.06
   - 0.06
   uvran: 0.5~100klambda
   uvtaper:
@@ -89,5 +99,5 @@ imagecal:
   wprojplanes: -1
 uvsub:
   fitorder: 1
-  linefreespw: 0:10~350;450~800
-  linespw: 0:351~449
+  linefreespw: '0:50~200;300~450'
+  linespw: '0:201~299'
