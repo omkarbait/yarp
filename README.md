@@ -91,6 +91,8 @@ Flag after applying selfcal. rflag the line free channels to 6 sigma, and the li
 
 6) cube_image.py: Use sofia for masking.
 
+The following flowchart provides a broad overview of the various steps followed by yarp.
+
 ![alt text](https://github.com/omkarbait/yarp/blob/master/yarp_flowchart.png "yarp overview")
 
 
