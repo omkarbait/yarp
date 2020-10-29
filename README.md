@@ -89,7 +89,9 @@ Flag after applying selfcal. rflag the line free channels to 6 sigma, and the li
 
 5) continuum_sub: subtracting the model using the ft task. Then do uvcontsub. 
 
-6) cube_image.py: Use sofia for masking. 
+6) cube_image.py: Use sofia for masking.
+
+![alt text](yarp_workflow.png "yarp overview")
 
 
 ## The future
